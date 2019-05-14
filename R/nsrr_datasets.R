@@ -2,6 +2,9 @@
 #' NSRR data sets
 #'
 #' @inheritParams nsrr_token
+#' @param page which page to grab.  Increment over successive requests to
+#' retrieve all datasets. A request that return NULL or a number of datasets
+#' less than 18 indicates the last page.
 #'
 #' @return A \code{data.frame} of the data sets and their endpoints
 #' @export
@@ -11,12 +14,19 @@
 #'
 #' @examples
 #' df = nsrr_datasets()
+#' if (attributes(df)$status_code == 200) {
 #' testthat::expect_is(df, "data.frame")
-nsrr_datasets = function(token = nsrr_token()) {
-  website = nsrr_website()
+#' slugs = c("abc", "bestair", "chat", "ccshs", "cfs",
+#' "heartbeat", "hchs", "homepap", "haassa", "learn")
+#' testthat::expect_true(all(slugs %in% df$slug))
+#' }
+nsrr_datasets = function(token = nsrr_token(),
+                         page = NULL) {
+  website = nsrr_api_url()
   datasets = paste0(website, "/datasets.json")
   query = list()
   query$auth_token = token
+  query$page = page
   res = httr::GET(datasets, query = query)
   x = httr::content(res, as = "text")
   x = jsonlite::fromJSON(x, flatten = TRUE)
@@ -25,6 +35,26 @@ nsrr_datasets = function(token = nsrr_token()) {
   x$files = sub(".json", "", x$path)
   x$files = paste0(x$files, "/files.json")
 
+  attr(x, "status_code") = httr::status_code(res)
+  return(x)
+}
+
+#' @export
+#' @rdname nsrr_datasets
+#' @examples
+#' nsrr_dataset(dataset = "shhs", token = "")
+nsrr_dataset = function(
+  dataset = NULL,
+  token = nsrr_token()) {
+
+  website = nsrr_api_url()
+  datasets = paste0(website, "/datasets/", dataset, ".json")
+  query = list()
+  query$auth_token = token
+  res = httr::GET(datasets, query = query)
+  x = httr::content(res, as = "text")
+  x = jsonlite::fromJSON(x, flatten = TRUE)
+  attr(x, "status_code") = httr::status_code(res)
   return(x)
 }
 
@@ -44,6 +74,9 @@ nsrr_datasets = function(token = nsrr_token()) {
 #' token = NULL
 #' df = nsrr_dataset_files(dataset)
 #' nsrr_dataset_files("wecare")
+#'
+#' testthat::expect_error(nsrr_dataset_files(), "one data")
+#' testthat::expect_error(nsrr_dataset_files(c("shhs", "chat")), "one data")
 nsrr_dataset_files = function(
   dataset = NULL,
   path = NULL,
@@ -76,6 +109,7 @@ nsrr_dataset_files = function(
   }
   x = httr::content(res, as = "text")
   x = jsonlite::fromJSON(x, flatten = TRUE)
+  attr(x, "status_code") = httr::status_code(res)
   return(x)
 }
 

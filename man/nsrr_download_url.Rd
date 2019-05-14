@@ -29,7 +29,7 @@ NSRR Download file
 }
 \examples{
 dataset = "shhs"
-path = "datasets/shhs-data-dictionary-0.13.1-domains.csv"
+path = "datasets/shhs-data-dictionary-0.13.2-domains.csv"
 nsrr_download_url(dataset, path, token = "")
 if (nsrr_have_token()) {
 res = nsrr_download_file(dataset, path)
@@ -37,4 +37,12 @@ testthat::expect_true(res$success)
 path = "biostatistics-with-r/shhs1.txt"
 res = nsrr_download_file(dataset, path)
 }
+url = nsrr_download_url("shhs", path = "datasets/CHANGELOG.md",
+token = NULL)
+res = nsrr_download_file("shhs", path = "datasets/CHANGELOG.md",
+token = NULL)
+testthat::expect_true(res$correct_md5)
+res = nsrr_download_file("shhs", path = "datasets/CHANGELOG.md",
+token = NULL, check_md5 = FALSE)
+testthat::expect_null(res$correct_md5)
 }

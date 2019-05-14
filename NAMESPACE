@@ -2,8 +2,10 @@
 
 export(nsrr_all_dataset_files)
 export(nsrr_api_url)
+export(nsrr_api_version)
 export(nsrr_auth)
 export(nsrr_authenticated)
+export(nsrr_dataset)
 export(nsrr_dataset_files)
 export(nsrr_datasets)
 export(nsrr_download_file)
