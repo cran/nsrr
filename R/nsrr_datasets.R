@@ -13,6 +13,7 @@
 #' @importFrom jsonlite fromJSON
 #'
 #' @examples
+#' df = nsrr_datasets(page = 1)
 #' df = nsrr_datasets()
 #' if (attributes(df)$status_code == 200) {
 #' testthat::expect_is(df, "data.frame")
@@ -24,18 +25,36 @@ nsrr_datasets = function(token = nsrr_token(),
                          page = NULL) {
   website = nsrr_api_url()
   datasets = paste0(website, "/datasets.json")
-  query = list()
-  query$auth_token = token
-  query$page = page
-  res = httr::GET(datasets, query = query)
-  x = httr::content(res, as = "text")
-  x = jsonlite::fromJSON(x, flatten = TRUE)
-  x$slug = sub("/datasets/", "", trimws(x$path))
-  x$slug = sub(".json$", "", x$slug)
-  x$files = sub(".json", "", x$path)
-  x$files = paste0(x$files, "/files.json")
+  if (is.null(page)) {
+    pages = 1:20
+  } else {
+    pages = page
+  }
+  df = vector(mode = "list", length = length(pages))
+  for (ipage in seq_along(pages)) {
+    page = pages[ipage]
+    query = list()
+    query$auth_token = token
+    query$page = page
+    res = httr::GET(datasets, query = query)
+    x = httr::content(res, as = "text")
+    x = jsonlite::fromJSON(x, flatten = TRUE)
+    if (NROW(x) > 0) {
+      x$slug = sub("/datasets/", "", trimws(x$path))
+      x$slug = sub(".json$", "", x$slug)
+      x$files = sub(".json", "", x$path)
+      x$files = paste0(x$files, "/files.json")
+      x$status_code = httr::status_code(res)
+      x$page = ipage
+      df[[ipage]] = x
+    } else {
+      break
+    }
+  }
+  x = do.call("rbind", df)
+  attr(x, "status_code") = unique(x$status_code)
+  x$status_code = NULL
 
-  attr(x, "status_code") = httr::status_code(res)
   return(x)
 }
 

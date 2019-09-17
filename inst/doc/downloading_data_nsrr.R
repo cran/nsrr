@@ -8,7 +8,7 @@ knitr::opts_chunk$set(
 library(nsrr)
 nsrr_auth()
 
-## ----example-------------------------------------------------------------
+## ----example, screenshot.force=FALSE-------------------------------------
 library(nsrr)
 df = nsrr_datasets()
 DT::datatable(df)
