@@ -32,13 +32,19 @@ A \code{data.frame} of the data sets and their endpoints
 NSRR data sets
 }
 \examples{
-df = nsrr_datasets(page = 1)
 df = nsrr_datasets()
 if (attributes(df)$status_code == 200) {
 testthat::expect_is(df, "data.frame")
 slugs = c("abc", "bestair", "chat", "ccshs", "cfs",
 "heartbeat", "hchs", "homepap", "haassa", "learn")
 testthat::expect_true(all(slugs \%in\% df$slug))
+}
+on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
+on_ci <- nzchar(Sys.getenv("CI"))
+local_run = grepl("musch", tolower(Sys.info()[["user"]]))
+run_example = !on_cran || on_ci || local_run
+if (run_example) {
+df = nsrr_datasets(page = 1)
 }
 nsrr_dataset(dataset = "shhs", token = "")
 dataset = "shhs"
@@ -50,7 +56,7 @@ ddf = nsrr_dataset_files(dataset, path = df$full_path[1])
 dataset = "shhs"
 token = NULL
 df = nsrr_dataset_files(dataset)
-nsrr_dataset_files("wecare")
+nsrr_dataset_files(dataset = "wecare")
 
 testthat::expect_error(nsrr_dataset_files(), "one data")
 testthat::expect_error(nsrr_dataset_files(c("shhs", "chat")), "one data")

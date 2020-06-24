@@ -14,6 +14,7 @@
 #' dataset = "shhs"
 #' df = nsrr_all_dataset_files(dataset, max_files = 10)
 #' testthat::expect_lte(nrow(df), 20)
+#' # keep as donttest - takes a long time
 #' \dontrun{
 #' df = nsrr_all_dataset_files(dataset)
 #' }
